@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:demo_app/Model/chatBubble.dart';
 import 'package:demo_app/Services/chat/chat_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class Chat extends StatefulWidget {
   final String receivername;
@@ -40,6 +42,10 @@ class _ChatState extends State<Chat> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.receivername),
+        elevation: 10,
+        backgroundColor: Colors.lightBlue,
+        foregroundColor: Colors.black,
+        shadowColor: Colors.black,
       ),
       body: Column(
         children: [
@@ -65,7 +71,7 @@ class _ChatState extends State<Chat> {
           return const Text('Loading');
         }
         if (snapshot.data == null) {
-          return Text('No data available');
+          return const Text('No data available');
         } else {
           return ListView(
             children: snapshot.data!.docs
@@ -79,17 +85,31 @@ class _ChatState extends State<Chat> {
 
   Widget _buildMessageItem(DocumentSnapshot document) {
     Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-    print(3);
     var alignment = (data['senderId'] == _auth.currentUser!.uid)
         ? Alignment.centerRight
         : Alignment.centerLeft;
+
+    var time = DateTime.parse(data['time'].toDate().toString());
+    String formattedTime = DateFormat.jm().format(time);
 
     return Container(
       alignment: alignment,
       child: Column(
         children: [
-          Text(data['senderEmail']),
-          Text(data['message']),
+          Container(
+            padding: const EdgeInsets.all(3.0),
+            alignment: alignment,
+            child: Text(
+              formattedTime,
+            ),
+          ),
+          Container(
+            alignment: alignment,
+            child: Padding(
+              padding: const EdgeInsets.all(6.0),
+              child: ChatBubble(message: data['message']),
+            ),
+          ),
         ],
       ),
     );
@@ -100,10 +120,10 @@ class _ChatState extends State<Chat> {
       children: [
         Expanded(
           child: Padding(
-            padding: EdgeInsets.only(left: 8.0, right: 8.0),
+            padding: const EdgeInsets.only(left: 8.0, right: 8.0),
             child: TextField(
               controller: _messagecontroller,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Message',
                 hintText: 'Enter Message',
               ),
